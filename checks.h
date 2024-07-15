@@ -11,4 +11,4 @@ GEBool CanProcFreeze(Entity& p_victim);
 GEBool CanProcBurn(Entity& p_victim);
 GEBool CanProcSharp(Entity& p_victim);
 GEBool CanProcBless(Entity& p_victim, gCScriptAdmin& scriptAdmin);
-GEBool CanProcForged(Entity& p_victim);
+GEBool IsParade(gEAction action);

@@ -67,6 +67,7 @@ GEBool CanProcBless(Entity& p_victim, gCScriptAdmin& scriptAdmin) {
 	return static_cast<GEBool>(scriptAdmin.CallScriptFromScript("IsEvil", &p_victim, &None, 0));
 }
 
-GEBool CanProcForged(Entity& p_victim) {
-	return GEFalse;
+
+GEBool IsParade(gEAction action) {
+	return action >= 20 && action <= 24;
 }
