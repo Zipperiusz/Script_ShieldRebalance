@@ -177,11 +177,10 @@ extern "C" __declspec(dllexport)
 gSScriptInit const* GE_STDCALL ScriptInit(void)
 {
 	GetScriptAdmin().LoadScriptDLL("Script_Game.dll");
-	GetScriptAdmin().LoadScriptDLL("Script_AssessHit.dll");
-	GetScriptAdmin().LoadScriptDLL("ScriptNewBalance.dll");
+	GetScriptAdmin().LoadScriptDLL("Script_NewBalance.dll");
 
-	if (!GetScriptAdmin().IsScriptDLLLoaded("Script_AssessHit.dll") && !GetScriptAdmin().IsScriptDLLLoaded("Script_NewBalance.dll")) {
-		GE_FATAL_ERROR_EX("Script_ShieldRebalance", "Missing Script_AssessHit.dll or Script_NewBalance.dll file.");
+	if (!GetScriptAdmin().IsScriptDLLLoaded("Script_NewBalance.dll")) {
+		GE_FATAL_ERROR_EX("Script_ShieldRebalance", "Missing Script_NewBalance.dll.");
 	}
 	Hook_AssessHit.Hook(GetScriptAdminExt().GetScript("AssessHit")->m_funcScript, &AssessHit, mCBaseHook::mEHookType_OnlyStack);
 	spy = new zSpy();
