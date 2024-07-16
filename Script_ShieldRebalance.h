@@ -12,6 +12,29 @@ gSScriptInit & GetScriptInit();
 #include <chrono>
 #include <random>
 
+class ShieldTest : public eCEngineComponentBase {
+public: virtual void	Process(void);
+public: virtual			~ShieldTest(void);
+private:
+	static bTPropertyObject<ShieldTest, eCEngineComponentBase> ms_PropertyObjectInstance_ShieldTest;
+
+public:
+	ShieldTest(void);
+	
+private:
+	ShieldTest(ShieldTest const&);
+	ShieldTest const& operator = (ShieldTest const&);
+};
+
+
+class SpellInfo {
+public:
+	GEBool ParadeSpell;
+	bCString spell;
+};
+
+SpellInfo* spellInfo;
+
 class Randomizer {
 private:
 	std::mt19937 gen;

@@ -7,14 +7,43 @@
 #include "util/ScriptUtil.h"
 #include "checks.h"
 #include "utility.h"
-#include "zSpy.h"
 #include "Script.h"
+Entity damager;
+void castSpell() {
+	Entity Player = Entity::GetPlayer();
+	Entity Target = Player.NPC.GetCurrentTarget();
+	bCMatrix Pose = Player.GetPose();
+	Pose.AccessTranslation().AccessY() += 130;
+	Entity Spell = Template(spellInfo->spell);
+
+	Entity Spawn = Spell.Magic.GetSpawn();
+	Entity SpawnedEntity = Spawn.Spawn(Spawn.GetTemplate(), Pose);
+
+	SpawnedEntity.Interaction.SetOwner(Player);
+	SpawnedEntity.Interaction.SetSpell(Spell);
+
+	SpawnedEntity.EnableCollisionWith(SpawnedEntity, GEFalse);
+	SpawnedEntity.EnableCollisionWith(Player, GEFalse);
+	bCVector Vec = Pose.AccessZAxis();
+	Vec.AccessY() += 0.01;
+	Vec.Normalize();
+	SpawnedEntity.CollisionShape.CreateShape(eECollisionShapeType_Point, eEShapeGroup_Projectile, bCVector(0, 0, 0), bCVector(0, 0, 0));
+
+	SpawnedEntity.Projectile.SetTarget(Target);
+	SpawnedEntity.Projectile.AccessProperty<PSProjectile::PropertyPathStyle>() = gEProjectilePath_Missile;
+
+	SpawnedEntity.Projectile.AccessProperty<PSProjectile::PropertyTargetDirection>() = Vec;
+	SpawnedEntity.Damage.AccessProperty<PSDamage::PropertyManaUsed>() = Spell.Magic.GetProperty<PSMagic::PropertyMaxManaCost>();
+	SpawnedEntity.Projectile.Shoot();
+
+}
 
 gSScriptInit& GetScriptInit()
 {
 	static gSScriptInit s_ScriptInit;
 	return s_ScriptInit;
 }
+
 
 static mCFunctionHook Hook_AssessHit;
 gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEntity, Entity* a_pOtherEntity, GEU32 a_iArgs) {
@@ -39,19 +68,19 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 		FreezeTime = 10;
 		ProcChance = 25;
 		SharpDamage = 20;
-		EvilDamage = 100;
+		EvilDamage = randomizer.Random(75, 100) * ScriptAdmin.CallScriptFromScript("GetIntelligence", &Victim, &None, 0) / 100.0f;
 		break;
 	case EDifficulty_Hard:
 		FreezeTime = 4;
 		ProcChance = 10;
 		SharpDamage = 10;
-		EvilDamage = 50;
+		EvilDamage = randomizer.Random(25, 50) * ScriptAdmin.CallScriptFromScript("GetIntelligence", &Victim, &None, 0) / 100.0f;
 		break;
 	default:
 		FreezeTime = 7;
 		ProcChance = 15;
 		SharpDamage = 15;
-		EvilDamage = 75;
+		EvilDamage = randomizer.Random(50, 75) * ScriptAdmin.CallScriptFromScript("GetIntelligence", &Victim, &None, 0) / 100.0f;
 		break;
 	}
 
@@ -63,7 +92,7 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 		Attacker = Damager;
 	}
 	if (Victim != Entity::GetPlayer() || Attacker == Entity::GetPlayer()) return OriginalResult;
-	//Check if attack was blocked	
+	//Check if attack was blocked
 	if (IsParade(OriginalResult)) {
 		//Check if player has shield in left hand and 1H in right
 		if (CheckHandUseTypes(gEUseType_Shield, gEUseType_1H, Victim)) {
@@ -149,7 +178,6 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 					CanProcBless(Attacker, ScriptAdmin)
 					) {
 					// Smash enemy with banish evil spell
-					spy->Send("Pomiot beliara");
 					EffectSystem::StartEffect("eff_magic_destroyevil_impact_01", Attacker);
 					ScriptAdmin.CallScriptFromScript("AddHitPoints", &Attacker, &None, -EvilDamage);
 					Attacker.NPC.SetLastAttacker(Victim);
@@ -165,11 +193,15 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 					(ShieldQuality & gEItemQuality_Forged) == gEItemQuality_Forged) {
 				}*/
 			}
-		}
+		}		
 	}
+	if (OriginalResult == gEAction_MagicParade) {
+		spellInfo->ParadeSpell = GETrue;
+		spellInfo->spell = Damager.Interaction.GetSpell().GetName();
+	}
+
 	return OriginalResult;
 }
-
 
 
 
@@ -183,10 +215,34 @@ gSScriptInit const* GE_STDCALL ScriptInit(void)
 		GE_FATAL_ERROR_EX("Script_ShieldRebalance", "Missing Script_NewBalance.dll.");
 	}
 	Hook_AssessHit.Hook(GetScriptAdminExt().GetScript("AssessHit")->m_funcScript, &AssessHit, mCBaseHook::mEHookType_OnlyStack);
-	spy = new zSpy();
-	spy->Send("ShieldRebalance script loaded.");
+	static bCAccessorCreator ShieldTest(bTClassName<ShieldTest>::GetUnmangled());
+
 	return &GetScriptInit();
 }
+
+ShieldTest::ShieldTest(void) {
+	spellInfo = new SpellInfo();
+	spellInfo->ParadeSpell = GEFalse;
+	eCModuleAdmin::GetInstance().RegisterModule(*this);
+}
+ShieldTest::~ShieldTest(void) {
+	if (spellInfo != nullptr) {
+		delete spellInfo;
+		spellInfo = nullptr;
+	}
+
+}
+bTPropertyObject<ShieldTest, eCEngineComponentBase> ShieldTest::ms_PropertyObjectInstance_ShieldTest(GETrue);
+
+void ShieldTest::Process() {
+	if (spellInfo->ParadeSpell) {
+		castSpell();
+		spellInfo->ParadeSpell = GEFalse;
+	}
+}
+
+
+
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID)
 {
@@ -194,6 +250,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID)
 	{
 	case DLL_PROCESS_ATTACH:
 		::DisableThreadLibraryCalls(hModule);
+		AllocConsole();
+		freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 		break;
 	case DLL_PROCESS_DETACH:
 		break;

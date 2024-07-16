@@ -83,7 +83,6 @@
     <ClInclude Include="checks.h" />
     <ClInclude Include="Script_ShieldRebalance.h" />
     <ClInclude Include="utility.h" />
-    <ClInclude Include="zSpy.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Shared\util\Logging.inl" />
