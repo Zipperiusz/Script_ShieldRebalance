@@ -1,8 +1,4 @@
 #pragma once
-#include <iostream>
-#include "util/Memory.h"
-#include "util/Logging.h"
-#include "util/Hook.h"
 #include "Script.h"
 
 GEBool CanProcDisease(Entity& p_victim, gCScriptAdmin& scriptAdmin);

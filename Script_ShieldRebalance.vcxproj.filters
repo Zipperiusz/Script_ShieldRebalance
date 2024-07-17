@@ -7,6 +7,12 @@
     <Filter Include="util">
       <UniqueIdentifier>{a473925b-9924-47ad-b92f-dc6fbaf970cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header">
+      <UniqueIdentifier>{c5bd76c2-2ba0-4712-8e58-85ef6505de31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{b96b3979-9466-4336-90b6-71eb44a159d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Shared\gui\ge_hudstaticnpc.cpp">
@@ -30,9 +36,15 @@
     <ClCompile Include="..\..\Shared\util\Util.cpp">
       <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="Script_ShieldRebalance.cpp" />
-    <ClCompile Include="utility.cpp" />
-    <ClCompile Include="checks.cpp" />
+    <ClCompile Include="checks.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Script_ShieldRebalance.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="utility.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Shared\gui\ge_hudstaticnpc.h">
@@ -56,9 +68,24 @@
     <ClInclude Include="..\..\Shared\util\Util.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="Script_ShieldRebalance.h" />
-    <ClInclude Include="utility.h" />
-    <ClInclude Include="checks.h" />
+    <ClInclude Include="checks.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Randomizer.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Script_ShieldRebalance.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicParadeInfo.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ShieldComponent.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="utility.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Shared\util\Logging.inl">

@@ -8,35 +8,10 @@
 #include "checks.h"
 #include "utility.h"
 #include "Script.h"
-Entity damager;
-void castSpell() {
-	Entity Player = Entity::GetPlayer();
-	Entity Target = Player.NPC.GetCurrentTarget();
-	bCMatrix Pose = Player.GetPose();
-	Pose.AccessTranslation().AccessY() += 130;
-	Entity Spell = Template(spellInfo->spell);
+#include "ShieldComponent.h"
+#include "Randomizer.h"
+#include <MagicParadeInfo.h>
 
-	Entity Spawn = Spell.Magic.GetSpawn();
-	Entity SpawnedEntity = Spawn.Spawn(Spawn.GetTemplate(), Pose);
-
-	SpawnedEntity.Interaction.SetOwner(Player);
-	SpawnedEntity.Interaction.SetSpell(Spell);
-
-	SpawnedEntity.EnableCollisionWith(SpawnedEntity, GEFalse);
-	SpawnedEntity.EnableCollisionWith(Player, GEFalse);
-	bCVector Vec = Pose.AccessZAxis();
-	Vec.AccessY() += 0.01;
-	Vec.Normalize();
-	SpawnedEntity.CollisionShape.CreateShape(eECollisionShapeType_Point, eEShapeGroup_Projectile, bCVector(0, 0, 0), bCVector(0, 0, 0));
-
-	SpawnedEntity.Projectile.SetTarget(Target);
-	SpawnedEntity.Projectile.AccessProperty<PSProjectile::PropertyPathStyle>() = gEProjectilePath_Missile;
-
-	SpawnedEntity.Projectile.AccessProperty<PSProjectile::PropertyTargetDirection>() = Vec;
-	SpawnedEntity.Damage.AccessProperty<PSDamage::PropertyManaUsed>() = Spell.Magic.GetProperty<PSMagic::PropertyMaxManaCost>();
-	SpawnedEntity.Projectile.Shoot();
-
-}
 
 gSScriptInit& GetScriptInit()
 {
@@ -44,46 +19,47 @@ gSScriptInit& GetScriptInit()
 	return s_ScriptInit;
 }
 
-
+static MagicParadeInfo magicParadeInfo;
 static mCFunctionHook Hook_AssessHit;
-gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEntity, Entity* a_pOtherEntity, GEU32 a_iArgs) {
-	INIT_SCRIPT_EXT(Victim, Damager);
-	gCScriptAdmin& ScriptAdmin = GetScriptAdmin();
-	Entity Attacker = Damager.Interaction.GetOwner();
-	GEBool BetterShieldPerk = Victim.Inventory.IsSkillActive("Perk_Shield_2");
-	GEInt FreezeTime;
-	GEInt ProcChance;
-	GEInt SharpDamage;
-	GEInt EvilDamage;
-	GEInt RandomDisease = randomizer.Random(0, 100);
-	GEInt RandomPoison = randomizer.Random(0, 100);
-	GEInt RandomBurn = randomizer.Random(0, 100);
-	GEInt RandomFreeze = randomizer.Random(0, 100);
-	GEInt RandomSharp = randomizer.Random(0, 100);
-	GEInt RandomBless = randomizer.Random(0, 100);
-	GEInt RandomForged = randomizer.Random(0, 100);
+static GEInt FreezeTime;
+static GEInt ProcChance;
+static GEInt SharpDamage;
+static GEInt EvilDamage;
+static EDifficulty currentDifficulty=Entity::GetCurrentDifficulty();
 
+void AdjustBalance() {
 	switch (Entity::GetCurrentDifficulty()) {
 	case EDifficulty_Easy:
 		FreezeTime = 10;
 		ProcChance = 25;
 		SharpDamage = 20;
-		EvilDamage = randomizer.Random(75, 100) * ScriptAdmin.CallScriptFromScript("GetIntelligence", &Victim, &None, 0) / 100.0f;
+		EvilDamage = randomizer.Random(75, 100);
 		break;
 	case EDifficulty_Hard:
 		FreezeTime = 4;
 		ProcChance = 10;
 		SharpDamage = 10;
-		EvilDamage = randomizer.Random(25, 50) * ScriptAdmin.CallScriptFromScript("GetIntelligence", &Victim, &None, 0) / 100.0f;
+		EvilDamage = randomizer.Random(25, 50);
 		break;
 	default:
 		FreezeTime = 7;
 		ProcChance = 15;
 		SharpDamage = 15;
-		EvilDamage = randomizer.Random(50, 75) * ScriptAdmin.CallScriptFromScript("GetIntelligence", &Victim, &None, 0) / 100.0f;
+		EvilDamage = randomizer.Random(50, 75);
 		break;
 	}
+}
 
+
+gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEntity, Entity* a_pOtherEntity, GEU32 a_iArgs) {
+	INIT_SCRIPT_EXT(Victim, Damager);
+	gCScriptAdmin& ScriptAdmin = GetScriptAdmin();
+	Entity Attacker = Damager.Interaction.GetOwner();
+	GEBool BetterShieldPerk = Victim.Inventory.IsSkillActive("Perk_Shield_2");
+
+	if (currentDifficulty != Entity::GetCurrentDifficulty()) {
+		AdjustBalance();
+	}
 	//Proc original function and get result
 	gEAction OriginalResult = Hook_AssessHit.GetOriginalFunction(&AssessHit)(a_pSPU, a_pSelfEntity, a_pOtherEntity, a_iArgs);
 
@@ -99,6 +75,14 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 			GEU32 ShieldQuality = Victim.Inventory.GetItemFromSlot(gESlot_LeftHand).Item.GetQuality();
 			//Check if there are any enchants on shield.
 			if (ShieldQuality > 0) {
+				GEInt RandomDisease = randomizer.Random(0, 100);
+				GEInt RandomPoison = randomizer.Random(0, 100);
+				GEInt RandomBurn = randomizer.Random(0, 100);
+				GEInt RandomFreeze = randomizer.Random(0, 100);
+				GEInt RandomSharp = randomizer.Random(0, 100);
+				GEInt RandomBless = randomizer.Random(0, 100);
+				GEInt RandomForged = randomizer.Random(0, 100);
+
 				//Take enchants from shield
 				//Shield perk level 2 increases proc chance and sharp damage
 				if (BetterShieldPerk) {
@@ -196,8 +180,9 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 		}		
 	}
 	if (OriginalResult == gEAction_MagicParade) {
-		spellInfo->ParadeSpell = GETrue;
-		spellInfo->spell = Damager.Interaction.GetSpell().GetName();
+		magicParadeInfo.ParadeSpell = GETrue;
+		magicParadeInfo.spell = Damager.Interaction.GetSpell().GetName();
+		magicParadeInfo.entity = Victim;
 	}
 
 	return OriginalResult;
@@ -215,29 +200,21 @@ gSScriptInit const* GE_STDCALL ScriptInit(void)
 		GE_FATAL_ERROR_EX("Script_ShieldRebalance", "Missing Script_NewBalance.dll.");
 	}
 	Hook_AssessHit.Hook(GetScriptAdminExt().GetScript("AssessHit")->m_funcScript, &AssessHit, mCBaseHook::mEHookType_OnlyStack);
-	static bCAccessorCreator ShieldTest(bTClassName<ShieldTest>::GetUnmangled());
 
 	return &GetScriptInit();
 }
 
-ShieldTest::ShieldTest(void) {
-	spellInfo = new SpellInfo();
-	spellInfo->ParadeSpell = GEFalse;
+ShieldComponent::ShieldComponent(void) {
+	magicParadeInfo.ParadeSpell = GEFalse;
 	eCModuleAdmin::GetInstance().RegisterModule(*this);
 }
-ShieldTest::~ShieldTest(void) {
-	if (spellInfo != nullptr) {
-		delete spellInfo;
-		spellInfo = nullptr;
-	}
 
-}
-bTPropertyObject<ShieldTest, eCEngineComponentBase> ShieldTest::ms_PropertyObjectInstance_ShieldTest(GETrue);
 
-void ShieldTest::Process() {
-	if (spellInfo->ParadeSpell) {
-		castSpell();
-		spellInfo->ParadeSpell = GEFalse;
+//Check if flag for parade is true and parade spell
+void ShieldComponent::Process() {
+	if (magicParadeInfo.ParadeSpell) {
+		castSpell(magicParadeInfo);
+		magicParadeInfo.ParadeSpell = GEFalse;
 	}
 }
 

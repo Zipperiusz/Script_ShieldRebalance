@@ -81,7 +81,10 @@
     <ClInclude Include="..\..\Shared\util\Memory.h" />
     <ClInclude Include="..\..\Shared\util\Util.h" />
     <ClInclude Include="checks.h" />
+    <ClInclude Include="Randomizer.h" />
     <ClInclude Include="Script_ShieldRebalance.h" />
+    <ClInclude Include="ShieldComponent.h" />
+    <ClInclude Include="MagicParadeInfo.h" />
     <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>

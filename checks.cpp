@@ -69,5 +69,5 @@ GEBool CanProcBless(Entity& p_victim, gCScriptAdmin& scriptAdmin) {
 
 
 GEBool IsParade(gEAction action) {
-	return action >= 20 && action <= 24;
+	return action >= gEAction_QuickParadeStumble && action <= gEAction_HeavyParadeStumble;
 }

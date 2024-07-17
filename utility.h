@@ -3,7 +3,6 @@
 #include "util/Memory.h"
 #include "util/Logging.h"
 #include "util/Hook.h"
-//#include "util/ScriptUtil.h"
 #include "Script.h"
 
 enum VulnerabilityStatus {
