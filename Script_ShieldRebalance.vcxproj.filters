@@ -45,6 +45,9 @@
     <ClCompile Include="utility.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="MagicParadeInfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Shared\gui\ge_hudstaticnpc.h">

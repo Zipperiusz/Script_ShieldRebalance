@@ -69,6 +69,7 @@
     <ClCompile Include="..\..\Shared\util\Memory.cpp" />
     <ClCompile Include="..\..\Shared\util\Util.cpp" />
     <ClCompile Include="checks.cpp" />
+    <ClCompile Include="MagicParadeInfo.cpp" />
     <ClCompile Include="Script_ShieldRebalance.cpp" />
     <ClCompile Include="utility.cpp" />
   </ItemGroup>

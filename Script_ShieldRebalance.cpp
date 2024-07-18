@@ -183,8 +183,10 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 	}
 	if (OriginalResult == gEAction_MagicParade) {
 		magicParadeInfo.ParadeSpell = GETrue;
-		magicParadeInfo.spell = Damager.Interaction.GetSpell().GetName();
-		magicParadeInfo.entity = Victim;
+		magicParadeInfo.Spell = Damager.Interaction.GetSpell().GetName();
+		magicParadeInfo.Attacker = Damager.GetOwner();
+		magicParadeInfo.Defender = Victim;
+
 	}
 
 	return OriginalResult;
@@ -216,7 +218,7 @@ int counter = 1;
 //Check if flag for parade is true and parade spell
 void ShieldComponent::Process() {
 	if (magicParadeInfo.ParadeSpell) {
-		magicParadeInfo.castSpell();
+		magicParadeInfo.CastSpell();
 		magicParadeInfo.ParadeSpell = GEFalse;
 	}
 }
