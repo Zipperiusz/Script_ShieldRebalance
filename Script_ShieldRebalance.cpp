@@ -1,8 +1,8 @@
 #include "Script_ShieldRebalance.h"
 
-#include "util\Memory.h"
-#include "util\Logging.h"
-#include "util\Hook.h"
+#include "util/Memory.h"
+#include "util/Logging.h"
+#include "util/Hook.h"
 #include "util/Util.h"
 #include "util/ScriptUtil.h"
 #include "checks.h"
@@ -67,7 +67,9 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 	{
 		Attacker = Damager;
 	}
-	if (Victim != Entity::GetPlayer() || Attacker == Entity::GetPlayer()) return OriginalResult;
+	if (Victim != Entity::GetPlayer() || Attacker == Entity::GetPlayer()) {
+		return OriginalResult;
+	}
 	//Check if attack was blocked
 	if (IsParade(OriginalResult)) {
 		//Check if player has shield in left hand and 1H in right
@@ -188,7 +190,7 @@ gEAction GE_STDCALL AssessHit(gCScriptProcessingUnit* a_pSPU, Entity* a_pSelfEnt
 	return OriginalResult;
 }
 
-
+GEBool testKeyPressed = GEFalse;
 
 extern "C" __declspec(dllexport)
 gSScriptInit const* GE_STDCALL ScriptInit(void)
@@ -209,11 +211,12 @@ ShieldComponent::ShieldComponent(void) {
 	eCModuleAdmin::GetInstance().RegisterModule(*this);
 }
 
+int counter = 1;
 
 //Check if flag for parade is true and parade spell
 void ShieldComponent::Process() {
 	if (magicParadeInfo.ParadeSpell) {
-		castSpell(magicParadeInfo);
+		magicParadeInfo.castSpell();
 		magicParadeInfo.ParadeSpell = GEFalse;
 	}
 }
